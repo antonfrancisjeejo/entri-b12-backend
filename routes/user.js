@@ -60,12 +60,16 @@ router.post("/login", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
     if (user) {
-      const result = await bcrypt.compare(req.body.password, user.password);
-      if (result) {
-        const token = jwt.sign({ id: user._id }, "secretkey");
-        return res.json(token);
+      if (user.verified) {
+        const result = await bcrypt.compare(req.body.password, user.password);
+        if (result) {
+          const token = jwt.sign({ id: user._id }, "secretkey");
+          return res.json(token);
+        } else {
+          return res.json({ msg: "Wrong Password" });
+        }
       } else {
-        return res.json({ msg: "Wrong Password" });
+        return res.json({ msg: "Account not verified" });
       }
     } else {
       return res.json({ msg: "No user found" });
